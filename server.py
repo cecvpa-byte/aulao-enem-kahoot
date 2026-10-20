@@ -92,6 +92,7 @@ def init():
         CREATE TABLE IF NOT EXISTS game (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL, current INTEGER NOT NULL, opened REAL, code TEXT NOT NULL, updated REAL NOT NULL, mode TEXT NOT NULL DEFAULT 'tablets', revealed INTEGER NOT NULL DEFAULT 0);
         CREATE TABLE IF NOT EXISTS players (id TEXT PRIMARY KEY, name TEXT NOT NULL, age INTEGER NOT NULL, score INTEGER NOT NULL DEFAULT 0, joined REAL NOT NULL);
         CREATE TABLE IF NOT EXISTS answers (player_id TEXT NOT NULL, question INTEGER NOT NULL, choice INTEGER NOT NULL, correct INTEGER NOT NULL, points INTEGER NOT NULL, answered REAL NOT NULL, PRIMARY KEY(player_id,question), FOREIGN KEY(player_id) REFERENCES players(id));
+        CREATE TABLE IF NOT EXISTS focus_events (id INTEGER PRIMARY KEY, player_id TEXT NOT NULL, question INTEGER NOT NULL, created REAL NOT NULL, FOREIGN KEY(player_id) REFERENCES players(id));
         """)
         cols = {row[1] for row in con.execute("PRAGMA table_info(game)").fetchall()}
         if "mode" not in cols:
@@ -184,6 +185,25 @@ def answer():
         con.execute("UPDATE players SET score=score+? WHERE id=?", (points,pid))
     return jsonify(ok=True, correct=bool(correct), points=points)
 
+@APP.post("/api/focus")
+def focus_event():
+    body = request.get_json(silent=True) or {}
+    pid = str(body.get("id", ""))[:80]
+    try: qidx = int(body.get("question", -1))
+    except (TypeError, ValueError): return err("Evento inválido.")
+    now = time.time()
+    with DB_LOCK, connection() as con:
+        g = dict(con.execute("SELECT * FROM game WHERE id=1").fetchone())
+        if g["mode"] != "tablets" or g["state"] != "question" or qidx != g["current"]:
+            return err("Não há pergunta de tablets ativa.", 409)
+        if not con.execute("SELECT 1 FROM players WHERE id=?", (pid,)).fetchone():
+            return err("Participante não encontrado.", 404)
+        recent = con.execute("SELECT created FROM focus_events WHERE player_id=? ORDER BY created DESC LIMIT 1", (pid,)).fetchone()
+        if recent and now - recent["created"] < 5:
+            return jsonify(ok=True, counted=False)
+        con.execute("INSERT INTO focus_events(player_id,question,created) VALUES(?,?,?)", (pid, qidx, now))
+    return jsonify(ok=True, counted=True)
+
 @APP.get("/api/me")
 def me():
     pid=request.args.get("id","")[:80]
@@ -196,7 +216,7 @@ def me():
 def board():
     if not admin_ok(): return err("Acesso não autorizado.",401)
     with connection() as con:
-        rows=con.execute("SELECT p.id,p.name,p.age,p.score,COUNT(a.question) AS answered,SUM(a.correct) AS correct FROM players p LEFT JOIN answers a ON a.player_id=p.id GROUP BY p.id ORDER BY p.score DESC,p.joined ASC").fetchall()
+        rows=con.execute("SELECT p.id,p.name,p.age,p.score,COUNT(a.question) AS answered,SUM(a.correct) AS correct,(SELECT COUNT(*) FROM focus_events f WHERE f.player_id=p.id) AS focus_events FROM players p LEFT JOIN answers a ON a.player_id=p.id GROUP BY p.id ORDER BY p.score DESC,p.joined ASC").fetchall()
         g=dict(con.execute("SELECT * FROM game WHERE id=1").fetchone())
         answered=con.execute("SELECT COUNT(*) FROM answers WHERE question=?",(g["current"],)).fetchone()[0] if g["current"]>=0 else 0
     q = QUESTIONS[g["current"]] if 0 <= g["current"] < len(QUESTIONS) else None
@@ -229,7 +249,7 @@ def control():
             if g["state"] != "lobby" or g["current"] != -1: return err("O modo só pode ser escolhido antes de abrir a primeira pergunta.", 409)
             con.execute("UPDATE game SET mode=?,updated=? WHERE id=1",(mode,time.time()))
         elif action=="start":
-            con.execute("DELETE FROM answers"); con.execute("DELETE FROM players")
+            con.execute("DELETE FROM answers"); con.execute("DELETE FROM focus_events"); con.execute("DELETE FROM players")
             con.execute("UPDATE game SET state='lobby',current=-1,opened=NULL,revealed=0,mode=?,code=?,updated=? WHERE id=1",(DEFAULT_MODE,f"{secrets.randbelow(900000)+100000}",time.time()))
         elif action=="open":
             idx=int((request.get_json(silent=True) or {}).get("question",0))
@@ -243,7 +263,7 @@ def control():
         elif action=="close": con.execute("UPDATE game SET state='lobby',opened=NULL,updated=? WHERE id=1",(time.time(),))
         elif action=="finish": con.execute("UPDATE game SET state='finished',opened=NULL,revealed=1,updated=? WHERE id=1",(time.time(),))
         elif action=="reset":
-            con.execute("DELETE FROM answers"); con.execute("DELETE FROM players")
+            con.execute("DELETE FROM answers"); con.execute("DELETE FROM focus_events"); con.execute("DELETE FROM players")
             con.execute("UPDATE game SET state='lobby',current=-1,opened=NULL,revealed=0,mode=?,code=?,updated=? WHERE id=1",(DEFAULT_MODE,f"{secrets.randbelow(900000)+100000}",time.time()))
         else: return err("Ação inválida.")
     return jsonify(ok=True)
