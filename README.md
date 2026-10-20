@@ -25,3 +25,7 @@ A hospedagem gratuita pode suspender o serviço após inatividade e reiniciá-lo
 ## Segurança e dados
 
 O painel do professor exige PIN. Na versão local, `professor.pin` e `kahoot.sqlite3` são arquivos privados e estão excluídos do Git. Na demo pública, os endpoints de cadastro são bloqueados. Nunca publique o banco local, o arquivo de PIN ou dados dos estudantes.
+
+## Recursos do painel do professor
+
+O painel acompanha a turma automaticamente, permite buscar participantes por nome, baixar um CSV com pontuação e acertos, copiar o link de acesso da sala e abrir a tela da TV em outra aba. Atalhos de teclado: **N** abre a próxima pergunta, **R** revela a resposta no modo de plaquinhas e **Esc** encerra a pergunta no modo tablets.

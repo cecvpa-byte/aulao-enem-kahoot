@@ -116,7 +116,7 @@ def network_addresses():
                 found.add(str(address))
     except OSError:
         pass
-    return jsonify(addresses=sorted(found), port=SERVER_PORT)
+    return jsonify(addresses=sorted(found), port=SERVER_PORT, public_demo=PUBLIC_DEMO_MODE)
 
 @APP.get("/healthz")
 def health():
@@ -130,7 +130,7 @@ def state():
     public_q = ({k: q[k] for k in ("subject", "topic", "prompt", "options")} if q else None)
     if public_q and g["revealed"]:
         public_q["correct"] = q["correct"]
-    return jsonify(state=g["state"], mode=g["mode"], revealed=bool(g["revealed"]), total=len(QUESTIONS), current=qidx, question=public_q if g["state"] == "question" else None,
+    return jsonify(state=g["state"], mode=g["mode"], public_demo=PUBLIC_DEMO_MODE, revealed=bool(g["revealed"]), total=len(QUESTIONS), current=qidx, question=public_q if g["state"] == "question" else None,
                    completed=(g["state"] == "finished"), server_time=time.time())
 
 @APP.post("/api/join")
@@ -184,7 +184,7 @@ def board():
         rows=con.execute("SELECT p.id,p.name,p.age,p.score,COUNT(a.question) AS answered,SUM(a.correct) AS correct FROM players p LEFT JOIN answers a ON a.player_id=p.id GROUP BY p.id ORDER BY p.score DESC,p.joined ASC").fetchall()
         g=dict(con.execute("SELECT * FROM game WHERE id=1").fetchone())
         answered=con.execute("SELECT COUNT(*) FROM answers WHERE question=?",(g["current"],)).fetchone()[0] if g["current"]>=0 else 0
-    return jsonify(players=[dict(x) for x in rows], state=g["state"], current=g["current"], code=g["code"], mode=g["mode"], revealed=bool(g["revealed"]), total=len(QUESTIONS), question_count=len(QUESTIONS), answered=answered)
+    return jsonify(players=[dict(x) for x in rows], state=g["state"], current=g["current"], code=g["code"], mode=g["mode"], public_demo=PUBLIC_DEMO_MODE, revealed=bool(g["revealed"]), total=len(QUESTIONS), question_count=len(QUESTIONS), answered=answered)
 
 @APP.get("/api/results")
 def results():
