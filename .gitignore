@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+kahoot.sqlite3
+kahoot.sqlite3-shm
+kahoot.sqlite3-wal
+professor.pin
+*.log

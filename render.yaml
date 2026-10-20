@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: aulao-enem-kahoot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server:APP --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 90
+    healthCheckPath: /healthz
+    envVars:
+      - key: PUBLIC_DEMO_MODE
+        value: "1"
+      - key: DATABASE_PATH
+        value: /tmp/kahoot.sqlite3
+      - key: KAHOOT_ADMIN_PIN
+        generateValue: true
