@@ -1,0 +1,145 @@
+[
+  {
+    "subject": "História",
+    "topic": "Imperialismo",
+    "prompt": "A expansão das potências industriais\n\nNo século XIX, potências europeias ampliaram seu domínio sobre territórios da África e da Ásia. Essa expansão esteve relacionada à busca por matérias-primas, mercados consumidores, áreas para investimento e influência política. Para justificar a dominação, alguns governos e intelectuais difundiram ideias racistas e discursos que apresentavam os europeus como superiores aos povos colonizados.\n\nA análise desse processo permite concluir que o imperialismo:",
+    "options": [
+      "promoveu a independência política imediata dos povos africanos e asiáticos.",
+      "eliminou a competição econômica entre as potências industriais.",
+      "esteve associado aos interesses econômicos e políticos das potências e à legitimação da dominação por ideias de superioridade racial.",
+      "ocorreu exclusivamente por motivos religiosos, sem interesses econômicos.",
+      "garantiu relações igualitárias entre colonizadores e colonizados."
+    ],
+    "correct": 2
+  },
+  {
+    "subject": "História",
+    "topic": "Crise de 1929 e regimes totalitários",
+    "prompt": "Crise econômica e radicalização política\n\nA crise de 1929 provocou falências, desemprego e dificuldades econômicas em diversos países. Durante a década de 1930, a insatisfação social e a instabilidade política contribuíram, em alguns contextos, para o fortalecimento de movimentos autoritários, como o nazismo na Alemanha. Esses regimes utilizaram propaganda, perseguição a opositores e restrições às liberdades políticas.\n\nUma característica dos regimes totalitários do século XX foi:",
+    "options": [
+      "a garantia do pluralismo político e da liberdade irrestrita de imprensa.",
+      "a concentração do poder, o controle social e a repressão aos opositores.",
+      "a defesa da alternância democrática de poder como princípio central.",
+      "a ausência de propaganda política e de mobilização das massas.",
+      "a eliminação de qualquer participação do Estado na sociedade."
+    ],
+    "correct": 1
+  },
+  {
+    "subject": "História",
+    "topic": "Segunda Guerra Mundial",
+    "prompt": "Guerra, genocídio e direitos humanos\n\nA Segunda Guerra Mundial (1939–1945) foi marcada por combates em diferentes continentes, perseguições, genocídio — incluindo o Holocausto — e o uso de armas nucleares contra Hiroshima e Nagasaki. Após o conflito, cresceu a preocupação internacional com a proteção da dignidade humana e a prevenção de novas atrocidades.\n\nEntre as consequências históricas do conflito, destaca-se:",
+    "options": [
+      "a consolidação definitiva de um mundo sem conflitos internacionais.",
+      "o fortalecimento de todos os regimes fascistas europeus.",
+      "o fim imediato de todas as formas de racismo e discriminação.",
+      "a criação da Organização das Nações Unidas e o fortalecimento dos debates internacionais sobre direitos humanos.",
+      "a extinção das disputas entre as grandes potências."
+    ],
+    "correct": 3
+  },
+  {
+    "subject": "História",
+    "topic": "Brasil: Vargas, ditadura militar e Guerra Fria",
+    "prompt": "Autoritarismo e disputa pelo poder\n\nA história brasileira no século XX foi marcada por diferentes experiências políticas. Getúlio Vargas governou em períodos distintos, incluindo o Estado Novo (1937–1945), uma ditadura. Em 1964, um golpe de Estado instaurou uma ditadura militar que durou até 1985. O contexto internacional da Guerra Fria também influenciou os discursos e as disputas políticas daquele período.\n\nUma característica comum a esses períodos autoritários foi:",
+    "options": [
+      "a ampliação irrestrita da liberdade de organização e de expressão.",
+      "a realização de eleições presidenciais livres e diretas em todos os momentos.",
+      "a completa ausência de censura e de perseguição política.",
+      "a garantia de autonomia plena aos movimentos de oposição.",
+      "a restrição de direitos políticos e de liberdades, com diferentes formas de controle e repressão."
+    ],
+    "correct": 4
+  },
+  {
+    "subject": "História",
+    "topic": "Redemocratização e história atual",
+    "prompt": "Democracia, memória e cidadania\n\nO fim da ditadura militar brasileira foi resultado de um processo de mobilização social e de disputas políticas. A campanha das Diretas Já, em 1984, reuniu amplos setores da sociedade em defesa de eleições diretas para presidente. A Constituição Federal de 1988 ampliou a proteção dos direitos civis, políticos e sociais.\n\nConsiderando esse processo, é correto afirmar que a redemocratização:",
+    "options": [
+      "representou a retomada e a ampliação de direitos, embora a consolidação democrática continue exigindo participação social e enfrentamento das desigualdades.",
+      "eliminou automaticamente a desigualdade social e todas as formas de discriminação.",
+      "impediu a organização de movimentos sociais e a participação popular.",
+      "restabeleceu a monarquia como forma de governo.",
+      "tornou desnecessária a proteção constitucional dos direitos humanos."
+    ],
+    "correct": 0
+  },
+  {
+    "subject": "Filosofia",
+    "topic": "Ética",
+    "prompt": "Aristóteles e a vida virtuosa\n\nPara Aristóteles, a ética está relacionada à formação do caráter e à prática das virtudes. A vida boa não depende apenas de possuir riquezas ou experimentar prazeres, mas de desenvolver hábitos equilibrados e agir de maneira racional nas diferentes situações.\n\nEssa concepção permite compreender que a ética aristotélica valoriza:",
+    "options": [
+      "a busca de prazer imediato como único objetivo da vida.",
+      "a obediência cega às regras, independentemente das circunstâncias.",
+      "o desenvolvimento das virtudes e a busca de uma vida realizada por meio de ações equilibradas.",
+      "a ideia de que as escolhas humanas não possuem dimensão moral.",
+      "a rejeição da razão nas decisões cotidianas."
+    ],
+    "correct": 2
+  },
+  {
+    "subject": "Filosofia",
+    "topic": "Liberdade e responsabilidade",
+    "prompt": "Jean-Paul Sartre e o existencialismo\n\nPara o filósofo Jean-Paul Sartre, os seres humanos constroem suas trajetórias por meio de escolhas realizadas em situações concretas. A liberdade não significa poder fazer tudo sem limites, mas assumir a responsabilidade pelas próprias decisões e reconhecer que elas contribuem para definir quem somos.\n\nDe acordo com essa perspectiva, a liberdade humana está relacionada:",
+    "options": [
+      "à ausência completa de consequências para as escolhas individuais.",
+      "à capacidade de escolher e à responsabilidade pelos próprios atos.",
+      "à impossibilidade de transformar a própria trajetória.",
+      "à ideia de que todas as decisões são determinadas exclusivamente pela natureza.",
+      "à obrigação de aceitar passivamente todas as normas sociais."
+    ],
+    "correct": 1
+  },
+  {
+    "subject": "Filosofia",
+    "topic": "Estética e felicidade",
+    "prompt": "A arte, a sensibilidade e a vida humana\n\nA experiência estética acontece quando as pessoas apreciam, interpretam e atribuem sentidos a obras de arte e outras manifestações culturais. Já a reflexão filosófica sobre a felicidade investiga o que torna uma vida boa e significativa. Essas questões podem ser relacionadas, mas não possuem uma única resposta válida para todas as pessoas e culturas.\n\nUma reflexão filosófica adequada sobre esses temas reconhece que:",
+    "options": [
+      "a arte possui sempre o mesmo significado para todas as sociedades.",
+      "a felicidade depende exclusivamente da aquisição de bens materiais.",
+      "a estética não tem relação com a sensibilidade ou com a cultura.",
+      "a arte pode ampliar a sensibilidade e a compreensão do mundo, enquanto a felicidade envolve diferentes concepções de vida boa.",
+      "a filosofia determina uma única obra artística capaz de tornar todas as pessoas felizes."
+    ],
+    "correct": 3
+  },
+  {
+    "subject": "Sociologia",
+    "topic": "Segregação e desigualdade social",
+    "prompt": "O acesso desigual aos direitos e às oportunidades\n\nEm muitas cidades brasileiras, bairros periféricos enfrentam dificuldades de acesso ao saneamento básico, ao transporte público, à saúde e a espaços de lazer. Essas condições não podem ser explicadas apenas pelas escolhas individuais dos moradores, pois também estão relacionadas à distribuição dos recursos e às políticas públicas.\n\nDo ponto de vista sociológico, essa situação evidencia:",
+    "options": [
+      "a inexistência de desigualdades nas sociedades contemporâneas.",
+      "que todos os cidadãos possuem as mesmas oportunidades concretas.",
+      "que a segregação urbana é resultado exclusivo de preferências pessoais.",
+      "que as condições de moradia não interferem no acesso a direitos.",
+      "a relação entre desigualdade socioeconômica, organização do espaço urbano e acesso desigual a serviços e oportunidades."
+    ],
+    "correct": 4
+  },
+  {
+    "subject": "Sociologia",
+    "topic": "Cidadania e movimentos sociais",
+    "prompt": "A participação coletiva na democracia\n\nMovimentos sociais organizam manifestações, campanhas e outras formas de mobilização para reivindicar direitos e denunciar problemas como racismo, violência, desigualdade de gênero e precariedade dos serviços públicos. A atuação desses grupos pode contribuir para tornar visíveis demandas de segmentos da população.\n\nA importância dos movimentos sociais para a democracia está relacionada:",
+    "options": [
+      "à possibilidade de ampliar a participação política e reivindicar a efetivação de direitos.",
+      "à substituição obrigatória de todas as instituições democráticas por grupos de ativistas.",
+      "à eliminação de todas as divergências presentes na sociedade.",
+      "à proibição da participação de pessoas que pensam de maneira diferente.",
+      "à ideia de que os direitos sociais independem da ação coletiva e das políticas públicas."
+    ],
+    "correct": 0
+  },
+  {
+    "subject": "Sociologia",
+    "topic": "Tecnologia, informação e sociedade",
+    "prompt": "Redes sociais e pensamento crítico\n\nAs redes sociais ampliaram a circulação de informações e facilitaram a mobilização de pessoas em torno de causas públicas. Ao mesmo tempo, conteúdos falsos, discursos de ódio e mensagens manipuladoras podem se espalhar rapidamente, influenciando debates e relações sociais.\n\nDiante dessa realidade, uma atitude coerente com a cidadania crítica é:\n\nGabarito do professor\n\nHistória\n\nQuestão 1\n\nC\n\nQuestão 2\n\nB\n\nQuestão 3\n\nD\n\nQuestão 4\n\nE\n\nQuestão 5\n\nA\n\nFilosofia\n\nQuestão 6\n\nC\n\nQuestão 7\n\nB\n\nQuestão 8\n\nD\n\nSociologia\n\nQuestão 9\n\nE\n\nQuestão 10\n\nA\n\nQuestão 11\n\nC",
+    "options": [
+      "compartilhar imediatamente toda informação que confirme as próprias opiniões.",
+      "considerar verdadeiros todos os conteúdos publicados por pessoas conhecidas.",
+      "verificar a origem das informações, comparar fontes confiáveis e refletir criticamente antes de compartilhar conteúdos.",
+      "abandonar qualquer participação nos debates públicos.",
+      "aceitar que a tecnologia elimina automaticamente preconceitos e desigualdades."
+    ],
+    "correct": 2
+  }
+]

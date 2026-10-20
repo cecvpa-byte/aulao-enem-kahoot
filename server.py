@@ -51,6 +51,10 @@ QUESTIONS = [
     {"subject":"Sociologia","topic":"Auguste Comte e o positivismo","prompt":"Auguste Comte defendia que a sociedade poderia ser estudada de maneira sistemática, procurando identificar regularidades nos fenômenos sociais. Seu pensamento contribuiu para a consolidação da Sociologia.\n\nEssa perspectiva está associada:","options":["Ao positivismo e à valorização do conhecimento científico.","À rejeição de qualquer observação da realidade social.","À ideia de que as sociedades não podem ser estudadas.","À explicação dos problemas sociais exclusivamente pela vontade individual.","À defesa de que toda mudança social é impossível."],"correct":0},
     {"subject":"Sociologia","topic":"Émile Durkheim e os fatos sociais","prompt":"Em uma sociedade, as pessoas aprendem regras de convivência, normas jurídicas e costumes que já existiam antes de seu nascimento. Essas regras influenciam o comportamento individual e podem gerar sanções quando são desrespeitadas.\n\nPara Émile Durkheim, esse exemplo se relaciona ao conceito de:","options":["Luta de classes.","Mais-valia.","Fato social.","Alienação econômica.","Contrato natural."],"correct":2},
 ]
+QUIZ_QUESTIONS = json.loads((ROOT / "quiz_questions.json").read_text(encoding="utf-8"))
+
+def question_set(activity):
+    return QUIZ_QUESTIONS if activity == "quiz" else QUESTIONS
 
 # Comentários didáticos exclusivos do painel autenticado do professor.
 EXPLANATIONS = [
@@ -89,7 +93,7 @@ def init():
     with DB_LOCK, connection() as con:
         con.execute("PRAGMA journal_mode=WAL")
         con.executescript("""
-        CREATE TABLE IF NOT EXISTS game (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL, current INTEGER NOT NULL, opened REAL, code TEXT NOT NULL, updated REAL NOT NULL, mode TEXT NOT NULL DEFAULT 'tablets', revealed INTEGER NOT NULL DEFAULT 0);
+        CREATE TABLE IF NOT EXISTS game (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL, current INTEGER NOT NULL, opened REAL, code TEXT NOT NULL, updated REAL NOT NULL, mode TEXT NOT NULL DEFAULT 'tablets', revealed INTEGER NOT NULL DEFAULT 0, activity TEXT NOT NULL DEFAULT 'kahoot');
         CREATE TABLE IF NOT EXISTS players (id TEXT PRIMARY KEY, name TEXT NOT NULL, age INTEGER NOT NULL, score INTEGER NOT NULL DEFAULT 0, joined REAL NOT NULL);
         CREATE TABLE IF NOT EXISTS answers (player_id TEXT NOT NULL, question INTEGER NOT NULL, choice INTEGER NOT NULL, correct INTEGER NOT NULL, points INTEGER NOT NULL, answered REAL NOT NULL, PRIMARY KEY(player_id,question), FOREIGN KEY(player_id) REFERENCES players(id));
         CREATE TABLE IF NOT EXISTS focus_events (id INTEGER PRIMARY KEY, player_id TEXT NOT NULL, question INTEGER NOT NULL, created REAL NOT NULL, FOREIGN KEY(player_id) REFERENCES players(id));
@@ -99,6 +103,8 @@ def init():
             con.execute("ALTER TABLE game ADD COLUMN mode TEXT NOT NULL DEFAULT 'tablets'")
         if "revealed" not in cols:
             con.execute("ALTER TABLE game ADD COLUMN revealed INTEGER NOT NULL DEFAULT 0")
+        if "activity" not in cols:
+            con.execute("ALTER TABLE game ADD COLUMN activity TEXT NOT NULL DEFAULT 'kahoot'")
         if not con.execute("SELECT 1 FROM game WHERE id=1").fetchone():
             con.execute("INSERT INTO game(id,state,current,opened,code,updated,mode,revealed) VALUES(1,'lobby',-1,NULL,?,?,?,0)", (f"{secrets.randbelow(900000)+100000}", time.time(), DEFAULT_MODE))
 
@@ -142,11 +148,12 @@ def health():
 def state():
     g = game()
     qidx = g["current"]
-    q = QUESTIONS[qidx] if 0 <= qidx < len(QUESTIONS) else None
+    questions = question_set(g["activity"])
+    q = questions[qidx] if 0 <= qidx < len(questions) else None
     public_q = ({k: q[k] for k in ("subject", "topic", "prompt", "options")} if q else None)
     if public_q and g["revealed"]:
         public_q["correct"] = q["correct"]
-    return jsonify(state=g["state"], mode=g["mode"], public_demo=PUBLIC_DEMO_MODE, revealed=bool(g["revealed"]), total=len(QUESTIONS), current=qidx, question=public_q if g["state"] == "question" else None,
+    return jsonify(state=g["state"], mode=g["mode"], activity=g["activity"], activity_name="Quiz" if g["activity"] == "quiz" else "Kahoot", public_demo=PUBLIC_DEMO_MODE, revealed=bool(g["revealed"]), total=len(questions), current=qidx, question=public_q if g["state"] == "question" else None,
                    completed=(g["state"] == "finished"), server_time=time.time())
 
 @APP.post("/api/join")
@@ -176,7 +183,7 @@ def answer():
         g = dict(con.execute("SELECT * FROM game WHERE id=1").fetchone())
         if g["mode"] != "tablets" or g["state"] != "question" or g["revealed"] or qidx != g["current"]: return err("Esta pergunta já foi encerrada.", 409)
         if not con.execute("SELECT 1 FROM players WHERE id=?", (pid,)).fetchone(): return err("Participante não encontrado.", 404)
-        correct = int(choice == QUESTIONS[qidx]["correct"])
+        correct = int(choice == question_set(g["activity"])[qidx]["correct"])
         elapsed = max(0, time.time() - (g["opened"] or time.time()))
         points = (1000 + max(0, int(500 * (1 - min(elapsed, 25) / 25)))) if correct else 0
         try:
@@ -219,11 +226,13 @@ def board():
         rows=con.execute("SELECT p.id,p.name,p.age,p.score,COUNT(a.question) AS answered,SUM(a.correct) AS correct,(SELECT COUNT(*) FROM focus_events f WHERE f.player_id=p.id) AS focus_events FROM players p LEFT JOIN answers a ON a.player_id=p.id GROUP BY p.id ORDER BY p.score DESC,p.joined ASC").fetchall()
         g=dict(con.execute("SELECT * FROM game WHERE id=1").fetchone())
         answered=con.execute("SELECT COUNT(*) FROM answers WHERE question=?",(g["current"],)).fetchone()[0] if g["current"]>=0 else 0
-    q = QUESTIONS[g["current"]] if 0 <= g["current"] < len(QUESTIONS) else None
+    questions = question_set(g["activity"])
+    q = questions[g["current"]] if 0 <= g["current"] < len(questions) else None
+    explanations = EXPLANATIONS if g["activity"] == "kahoot" else [f"A alternativa {LETTERS[x['correct']]} sintetiza a ideia principal de {x['topic']}." for x in questions]
     teacher_question = ({"subject": q["subject"], "topic": q["topic"], "prompt": q["prompt"],
                          "options": q["options"], "correct": q["correct"],
-                         "correct_letter": LETTERS[q["correct"]], "explanation": EXPLANATIONS[g["current"]]} if q else None)
-    return jsonify(players=[dict(x) for x in rows], state=g["state"], current=g["current"], code=g["code"], mode=g["mode"], public_demo=PUBLIC_DEMO_MODE, revealed=bool(g["revealed"]), total=len(QUESTIONS), question_count=len(QUESTIONS), answered=answered, question=teacher_question)
+                         "correct_letter": LETTERS[q["correct"]], "explanation": explanations[g["current"]]} if q else None)
+    return jsonify(players=[dict(x) for x in rows], state=g["state"], current=g["current"], code=g["code"], mode=g["mode"], activity=g["activity"], activity_name="Quiz" if g["activity"] == "quiz" else "Kahoot", public_demo=PUBLIC_DEMO_MODE, revealed=bool(g["revealed"]), total=len(questions), question_count=len(questions), answered=answered, question=teacher_question)
 
 @APP.get("/api/results")
 def results():
@@ -231,7 +240,7 @@ def results():
     with connection() as con:
         rows=con.execute("SELECT p.name,p.age,p.score,COUNT(a.question) answered,SUM(a.correct) correct FROM players p LEFT JOIN answers a ON a.player_id=p.id GROUP BY p.id ORDER BY p.score DESC,p.joined ASC").fetchall()
         detail=[]
-        for i,q in enumerate(QUESTIONS):
+        for i,q in enumerate(question_set(g["activity"])):
             stats=con.execute("SELECT choice,COUNT(*) n FROM answers WHERE question=? GROUP BY choice",(i,)).fetchall()
             detail.append({"topic":q["topic"],"correct":LETTERS[q["correct"]],"answers":{LETTERS[r["choice"]]:r["n"] for r in stats}})
     return jsonify(players=[dict(x) for x in rows], questions=detail)
@@ -248,12 +257,20 @@ def control():
             if PUBLIC_DEMO_MODE and mode != "placards": return err("A demonstração pública usa somente plaquinhas e não coleta dados de alunos.", 403)
             if g["state"] != "lobby" or g["current"] != -1: return err("O modo só pode ser escolhido antes de abrir a primeira pergunta.", 409)
             con.execute("UPDATE game SET mode=?,updated=? WHERE id=1",(mode,time.time()))
+        elif action=="activity":
+            activity=(request.get_json(silent=True) or {}).get("activity")
+            if activity not in ("kahoot", "quiz"): return err("Atividade inválida.")
+            if g["state"] != "lobby" or g["current"] != -1: return err("A atividade só pode ser trocada antes da primeira pergunta. Use Nova partida para reiniciar.", 409)
+            if activity != g["activity"]:
+                if con.execute("SELECT 1 FROM players LIMIT 1").fetchone(): return err("Há alunos aguardando nesta sala. Use Nova partida para limpar a sala com segurança e então troque a atividade.", 409)
+                con.execute("DELETE FROM answers"); con.execute("DELETE FROM focus_events"); con.execute("DELETE FROM players")
+                con.execute("UPDATE game SET activity=?,code=?,updated=? WHERE id=1",(activity,f"{secrets.randbelow(900000)+100000}",time.time()))
         elif action=="start":
             con.execute("DELETE FROM answers"); con.execute("DELETE FROM focus_events"); con.execute("DELETE FROM players")
             con.execute("UPDATE game SET state='lobby',current=-1,opened=NULL,revealed=0,mode=?,code=?,updated=? WHERE id=1",(DEFAULT_MODE,f"{secrets.randbelow(900000)+100000}",time.time()))
         elif action=="open":
             idx=int((request.get_json(silent=True) or {}).get("question",0))
-            if idx not in range(len(QUESTIONS)): return err("Pergunta inválida.")
+            if idx not in range(len(question_set(g["activity"]))): return err("Pergunta inválida.")
             can_advance = g["state"] == "lobby" or (g["mode"] == "placards" and g["state"] == "question" and g["revealed"])
             if not can_advance or idx != g["current"] + 1: return err("A próxima pergunta não está disponível.", 409)
             con.execute("UPDATE game SET state='question',current=?,opened=?,revealed=0,updated=? WHERE id=1",(idx,time.time(),time.time()))

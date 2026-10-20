@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s);let painted=-1,paintedReveal=false;
-async function refresh(){try{const r=await fetch("/api/state",{cache:"no-store"});const s=await r.json();$("#tvStatus").innerHTML='<i></i> SALA AO VIVO';const physical=s.mode==="placards";
+async function refresh(){try{const r=await fetch("/api/state",{cache:"no-store"});const s=await r.json();$("#tvStatus").innerHTML='<i></i> SALA AO VIVO';$("#tvProgress").textContent=`${s.activity_name||"Kahoot"} · ${s.total} QUESTÕES`;const physical=s.mode==="placards";
  $("#tvWaiting").classList.toggle("hidden",s.state!=="lobby"||physical&&s.current>=0);$("#tvQuestion").classList.toggle("hidden",s.state!=="question");$("#tvFinished").classList.toggle("hidden",s.state!=="finished");
  if(s.state==="finished"){$("#tvProgress").textContent="AULÃO CONCLUÍDO";return}
  if(s.state!=="question"){const h=$("#tvWaiting").querySelector("h1"),p=$("#tvWaiting").querySelector(".tv-sub");if(!physical){h.innerHTML="Partida nos<br><em>tablets.</em>";p.textContent="Os participantes respondem pelo próprio dispositivo."}else{h.innerHTML="A sala vai jogar<br><em>em equipe.</em>";p.innerHTML="Fiquem atentos à pergunta e levantem a plaquinha<br>com a letra que vocês acham correta."}return}

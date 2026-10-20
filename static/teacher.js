@@ -15,7 +15,7 @@ function renderPlayers(ps){
  if(!ps.length){target.innerHTML='<div class="empty-state"><span>✦</span><p>A sala está pronta.<br>Os alunos aparecem aqui ao entrar.</p></div>';return}
  const query=$("#playerFilter").value.trim().toLocaleLowerCase("pt-BR"),filtered=ps.filter(p=>p.name.toLocaleLowerCase("pt-BR").includes(query));
  if(!filtered.length){target.innerHTML='<div class="empty-state"><span>⌕</span><p>Nenhum participante encontrado.<br>Tente outro nome.</p></div>';return}
- target.innerHTML=filtered.map(p=>{const i=ps.indexOf(p),focus=Number(p.focus_events||0);return `<div class="player-row"><span class="player-name"><i class="avatar">${i<3?["🥇","🥈","🥉"][i]:esc(p.name.trim()[0].toUpperCase())}</i>${esc(p.name)}</span><span>${p.age}</span><span>${p.answered}/11</span><span class="focus-count ${focus?"has-focus":""}" title="${focus?`${focus} saída(s) da tela durante pergunta`:"Nenhuma saída da tela registrada"}">${focus?`↗ ${focus}`:"—"}</span><span class="points">${Number(p.score).toLocaleString("pt-BR")}</span></div>`}).join("");
+ target.innerHTML=filtered.map(p=>{const i=ps.indexOf(p),focus=Number(p.focus_events||0);return `<div class="player-row"><span class="player-name"><i class="avatar">${i<3?["🥇","🥈","🥉"][i]:esc(p.name.trim()[0].toUpperCase())}</i>${esc(p.name)}</span><span>${p.age}</span><span>${p.answered}/${latest?.total||11}</span><span class="focus-count ${focus?"has-focus":""}" title="${focus?`${focus} saída(s) da tela durante pergunta`:"Nenhuma saída da tela registrada"}">${focus?`↗ ${focus}`:"—"}</span><span class="points">${Number(p.score).toLocaleString("pt-BR")}</span></div>`}).join("");
 }
 function renderTeacherQuestion(q,revealed){
  const panel=$("#teacherAnswer");
@@ -31,19 +31,21 @@ async function update(){
  if(!pin)return;
  try{
   const b=await api("/api/board");latest=b;renderPlayers(b.players);
-  const physical=b.mode==="placards",active=b.state==="question",finished=b.state==="finished",last=b.current===10;
+  const physical=b.mode==="placards",active=b.state==="question",finished=b.state==="finished",last=b.current===b.total-1,selectable=b.current<0&&b.state==="lobby";
   $("#dash").classList.toggle("placard-layout",physical);$("#playersCard").classList.toggle("hidden",physical);
   $("#copyLinkBtn").innerHTML=physical?"▣ Copiar link da TV":"⌁ Copiar link e código";$("#exportBtn").disabled=physical||!b.players.length;
   $("#tabletMode").classList.toggle("active",!physical);$("#placardMode").classList.toggle("active",physical);
   $("#tabletMode").setAttribute("aria-pressed",String(!physical));$("#placardMode").setAttribute("aria-pressed",String(physical));
-  $("#tabletMode").disabled=b.public_demo||b.current>=0||b.state!=="lobby";$("#placardMode").disabled=b.current>=0||b.state!=="lobby";
-  $("#modeHelp").textContent=b.public_demo?"Na demo pública, a turma joga com plaquinhas; o cadastro de alunos fica desativado.":physical?"A questão aparece na TV. A turma vota com plaquinhas A–E e você revela a correta depois.":"Cada aluno entra pelo tablet para responder e somar pontos.";
+  $("#tabletMode").disabled=!selectable;$("#placardMode").disabled=!selectable;
+  $("#modeHelp").textContent=b.public_demo?"Tablets estão bloqueados nesta demonstração para não enviar nomes e idades dos alunos à hospedagem. No servidor local, o modo funciona normalmente.":physical?"A questão aparece na TV. A turma vota com plaquinhas A–E e você revela a correta depois.":"Cada aluno entra pelo tablet para responder e somar pontos.";
+  const quiz=b.activity==="quiz";$("#kahootActivity").classList.toggle("active",!quiz);$("#quizActivity").classList.toggle("active",quiz);$("#kahootActivity").setAttribute("aria-pressed",String(!quiz));$("#quizActivity").setAttribute("aria-pressed",String(quiz));$("#kahootActivity").disabled=$("#quizActivity").disabled=!selectable;
+  $("#activityHelp").textContent=quiz?"Quiz do arquivo QUIZ.docx · 11 questões de História, Filosofia e Sociologia.":"Kahoot original · perguntas rápidas, pontos e classificação da turma.";
   $("#roomCode").classList.toggle("hidden",physical);$("#tvLink").classList.toggle("hidden",!physical);
-  const done=Math.max(0,b.current+1);$("#progressText").textContent=`${done} / 11`;$("#progressBar").style.width=(done/11*100)+"%";
+  const done=Math.max(0,b.current+1);$("#progressText").textContent=`${done} / ${b.total}`;$("#progressBar").style.width=(done/b.total*100)+"%";
   $("#answeredCount").textContent=physical?(active?(b.revealed?"Resposta revelada. A turma já pode conferir e comentar.":"Deixe a turma conversar e levantar as plaquinhas."):"A tela da TV fica sincronizada com este painel."):(active?`${b.answered} resposta${b.answered===1?"":"s"} recebida${b.answered===1?"":"s"} nesta pergunta`:`${b.players.length} participante${b.players.length===1?"":"s"} na sala`);
   $("#stateLabel").textContent=active?(b.revealed?"RESPOSTA REVELADA":"PERGUNTA ABERTA"):finished?"FINALIZADO":"AGUARDANDO";
-  $("#stateTitle").textContent=active?`Pergunta ${String(b.current+1).padStart(2,"0")}`:finished?"Aulão finalizado":"Sala aberta";
-  const canOpen=!finished&&!active&&b.current<10||physical&&active&&b.revealed&&!last;
+  $("#stateTitle").textContent=active?`${quiz?"Quiz":"Kahoot"} · pergunta ${String(b.current+1).padStart(2,"0")}`:finished?`${quiz?"Quiz":"Kahoot"} finalizado":"Sala aberta";
+  const canOpen=!finished&&!active&&b.current<b.total-1||physical&&active&&b.revealed&&!last;
   $("#openBtn").classList.toggle("hidden",!canOpen);
   $("#openBtn").textContent=b.current<0?"▶  Abrir primeira pergunta":"▶  Abrir próxima pergunta";
   $("#revealBtn").classList.toggle("hidden",!physical||!active||b.revealed);
@@ -60,12 +62,14 @@ async function update(){
 async function control(action,extra={}){try{await api("/api/control",{action,...extra});await update()}catch(e){alert(e.message)}}
 async function setMode(mode){try{await api("/api/control",{action:"mode",mode});await update()}catch(e){alert(e.message)}}
 $("#tabletMode").onclick=()=>setMode("tablets");$("#placardMode").onclick=()=>setMode("placards");
+async function setActivity(activity){try{await api("/api/control",{action:"activity",activity});await update()}catch(e){alert(e.message)}}
+$("#kahootActivity").onclick=()=>setActivity("kahoot");$("#quizActivity").onclick=()=>setActivity("quiz");
 $("#openBtn").onclick=()=>control("open",{question:latest?latest.current+1:0});$("#revealBtn").onclick=()=>control("reveal");$("#closeBtn").onclick=()=>control("close");
 $("#finishBtn").onclick=async()=>{await api("/api/control",{action:"finish"});await update();if(latest?.mode==="tablets")await showResults()};
 $("#resetBtn").onclick=()=>{if(confirm("Começar outra partida? O placar e os dados da partida atual serão apagados."))control("start")};
 $("#hideResults").onclick=()=>$("#results").classList.add("hidden");
 async function showResults(){const r=await api("/api/results"),p=r.players,medals=["🥇","🥈","🥉"];
- $("#podium").innerHTML=(p.length?p.slice(0,3):[]).map((x,i)=>`<div class="podium-item"><span class="medal">${medals[i]}</span><strong>${esc(x.name)}</strong><small>${x.correct||0} acertos · ${x.answered}/11</small><b>${Number(x.score).toLocaleString("pt-BR")} pts</b></div>`).join("")||"<p>Ainda não há participantes.</p>";
+ $("#podium").innerHTML=(p.length?p.slice(0,3):[]).map((x,i)=>`<div class="podium-item"><span class="medal">${medals[i]}</span><strong>${esc(x.name)}</strong><small>${x.correct||0} acertos · ${x.answered}/${latest?.total||11}</small><b>${Number(x.score).toLocaleString("pt-BR")} pts</b></div>`).join("")||"<p>Ainda não há participantes.</p>";
  $("#questionResults").innerHTML=r.questions.map((q,i)=>`<div class="result-q"><span>QUESTÃO ${String(i+1).padStart(2,"0")}</span><strong>${esc(q.topic)}</strong><small>Gabarito: ${q.correct} &nbsp;·&nbsp; Respostas: ${Object.entries(q.answers).map(([l,n])=>l+" "+n).join(" · ")||"nenhuma"}</small></div>`).join("");$("#results").classList.remove("hidden");$("#results").scrollIntoView({behavior:"smooth",block:"start"});
 }
 $("#playerFilter").addEventListener("input",()=>{if(latest)renderPlayers(latest.players)});

@@ -4,7 +4,7 @@ Jogo de revisão com 11 questões de História, Filosofia e Sociologia, com visu
 
 ## Usar na sala de aula (notebook local)
 
-O notebook hospeda a partida na rede local, sem depender de internet depois da instalação. A versão local tem dois modos: Tablets (cada aluno entra com nome e idade) e Plaquinhas + TV. Os dados ficam em `kahoot.sqlite3` no notebook.
+O notebook hospeda a partida na rede local, sem depender de internet depois da instalação. A versão local tem duas atividades selecionáveis pelo professor no painel — o Kahoot original e o Quiz do arquivo `QUIZ.docx` — e dois formatos de participação: Tablets (cada aluno entra com nome e idade) e Plaquinhas + TV. Os dados ficam em `kahoot.sqlite3` no notebook.
 
 1. Instale Python 3 e execute `py -3 -m pip install -r requirements.txt`.
 2. Inicie com `Iniciar-Kahoot.bat` e mantenha a janela aberta.
@@ -28,7 +28,7 @@ O painel do professor exige PIN. Na versão local, `professor.pin` e `kahoot.sql
 
 ## Recursos do painel do professor
 
-O painel acompanha a turma automaticamente, permite buscar participantes por nome, baixar um CSV com pontuação e acertos, copiar o link de acesso da sala e abrir a tela da TV em outra aba. Atalhos de teclado: **N** abre a próxima pergunta, **R** revela a resposta no modo de plaquinhas e **Esc** encerra a pergunta no modo tablets.
+O painel acompanha a turma automaticamente, permite buscar participantes por nome, baixar um CSV com pontuação e acertos, copiar o link de acesso da sala e abrir a tela da TV em outra aba. A seleção entre Kahoot e Quiz e o formato de participação só podem ser alterados no painel autenticado do professor, antes da primeira pergunta. Atalhos de teclado: **N** abre a próxima pergunta, **R** revela a resposta no modo de plaquinhas e **Esc** encerra a pergunta no modo tablets.
 
 No modo tablets local, sair da página durante uma pergunta gera um aviso e uma contagem no painel do professor. O navegador pode contar também alternar abas, minimizar ou bloquear a tela; não registramos qual site foi aberto. Ao tentar fechar ou recarregar a partida, o navegador pede confirmação. A demo pública continua em modo de plaquinhas e não recebe cadastro de alunos.
 
