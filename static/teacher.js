@@ -44,7 +44,7 @@ async function update(){
   const done=Math.max(0,b.current+1);$("#progressText").textContent=`${done} / ${b.total}`;$("#progressBar").style.width=(done/b.total*100)+"%";
   $("#answeredCount").textContent=physical?(active?(b.revealed?"Resposta revelada. A turma já pode conferir e comentar.":"Deixe a turma conversar e levantar as plaquinhas."):"A tela da TV fica sincronizada com este painel."):(active?`${b.answered} resposta${b.answered===1?"":"s"} recebida${b.answered===1?"":"s"} nesta pergunta`:`${b.players.length} participante${b.players.length===1?"":"s"} na sala`);
   $("#stateLabel").textContent=active?(b.revealed?"RESPOSTA REVELADA":"PERGUNTA ABERTA"):finished?"FINALIZADO":"AGUARDANDO";
-  $("#stateTitle").textContent=active?`${quiz?"Quiz":"Kahoot"} · pergunta ${String(b.current+1).padStart(2,"0")}`:finished?`${quiz?"Quiz":"Kahoot"} finalizado":"Sala aberta";
+  $("#stateTitle").textContent=active?`${quiz?"Quiz":"Kahoot"} · pergunta ${String(b.current+1).padStart(2,"0")}`:finished?`${quiz?"Quiz":"Kahoot"} finalizado`:"Sala aberta";
   const canOpen=!finished&&!active&&b.current<b.total-1||physical&&active&&b.revealed&&!last;
   $("#openBtn").classList.toggle("hidden",!canOpen);
   $("#openBtn").textContent=b.current<0?"▶  Abrir primeira pergunta":"▶  Abrir próxima pergunta";
