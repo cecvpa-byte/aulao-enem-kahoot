@@ -29,3 +29,7 @@ O painel do professor exige PIN. Na versão local, `professor.pin` e `kahoot.sql
 ## Recursos do painel do professor
 
 O painel acompanha a turma automaticamente, permite buscar participantes por nome, baixar um CSV com pontuação e acertos, copiar o link de acesso da sala e abrir a tela da TV em outra aba. Atalhos de teclado: **N** abre a próxima pergunta, **R** revela a resposta no modo de plaquinhas e **Esc** encerra a pergunta no modo tablets.
+
+## Gabarito privado do professor
+
+No painel autenticado, o professor vê o enunciado completo, as alternativas, o gabarito destacado e uma justificativa didática antes de revelar a resposta à turma. Esse material é entregue apenas pelo endpoint protegido do painel; TV e participantes não recebem o gabarito antecipadamente.

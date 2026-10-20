@@ -52,6 +52,21 @@ QUESTIONS = [
     {"subject":"Sociologia","topic":"Émile Durkheim e os fatos sociais","prompt":"Em uma sociedade, as pessoas aprendem regras de convivência, normas jurídicas e costumes que já existiam antes de seu nascimento. Essas regras influenciam o comportamento individual e podem gerar sanções quando são desrespeitadas.\n\nPara Émile Durkheim, esse exemplo se relaciona ao conceito de:","options":["Luta de classes.","Mais-valia.","Fato social.","Alienação econômica.","Contrato natural."],"correct":2},
 ]
 
+# Comentários didáticos exclusivos do painel autenticado do professor.
+EXPLANATIONS = [
+    "A agricultura e a domesticação favoreceram a produção regular de alimentos e a permanência das comunidades em um mesmo território.",
+    "A cidadania antiga era restrita. Em Atenas, por exemplo, mulheres, escravizados e estrangeiros não participavam das decisões políticas.",
+    "Mali e outros reinos africanos organizaram governos, cidades e redes comerciais próprias, com destaque para o comércio de ouro e sal.",
+    "A Reforma e a Contrarreforma dividiram a cristandade ocidental e provocaram disputas religiosas e políticas na Europa.",
+    "A expansão marítima conectou continentes, mas ocorreu junto à conquista, à escravização e à exploração colonial.",
+    "A Filosofia grega nasceu da busca por explicações argumentadas e racionais sobre a realidade, em vez de depender somente dos mitos.",
+    "Para Heráclito, o movimento e a mudança são aspectos fundamentais da realidade; tudo está em transformação.",
+    "A tradição de Confúcio mostra que questões filosóficas, éticas e políticas também foram pensadas em culturas não gregas.",
+    "As revoluções Industrial e Francesa mudaram profundamente a vida coletiva. A Sociologia surgiu para investigar essas transformações e seus problemas.",
+    "O positivismo de Comte propunha estudar a sociedade de modo sistemático, com observação e busca de regularidades.",
+    "Fatos sociais são maneiras coletivas de agir, pensar e sentir que existem além do indivíduo e exercem influência sobre ele.",
+]
+
 def db():
     con = sqlite3.connect(DB_PATH, timeout=20)
     con.row_factory = sqlite3.Row
@@ -184,7 +199,11 @@ def board():
         rows=con.execute("SELECT p.id,p.name,p.age,p.score,COUNT(a.question) AS answered,SUM(a.correct) AS correct FROM players p LEFT JOIN answers a ON a.player_id=p.id GROUP BY p.id ORDER BY p.score DESC,p.joined ASC").fetchall()
         g=dict(con.execute("SELECT * FROM game WHERE id=1").fetchone())
         answered=con.execute("SELECT COUNT(*) FROM answers WHERE question=?",(g["current"],)).fetchone()[0] if g["current"]>=0 else 0
-    return jsonify(players=[dict(x) for x in rows], state=g["state"], current=g["current"], code=g["code"], mode=g["mode"], public_demo=PUBLIC_DEMO_MODE, revealed=bool(g["revealed"]), total=len(QUESTIONS), question_count=len(QUESTIONS), answered=answered)
+    q = QUESTIONS[g["current"]] if 0 <= g["current"] < len(QUESTIONS) else None
+    teacher_question = ({"subject": q["subject"], "topic": q["topic"], "prompt": q["prompt"],
+                         "options": q["options"], "correct": q["correct"],
+                         "correct_letter": LETTERS[q["correct"]], "explanation": EXPLANATIONS[g["current"]]} if q else None)
+    return jsonify(players=[dict(x) for x in rows], state=g["state"], current=g["current"], code=g["code"], mode=g["mode"], public_demo=PUBLIC_DEMO_MODE, revealed=bool(g["revealed"]), total=len(QUESTIONS), question_count=len(QUESTIONS), answered=answered, question=teacher_question)
 
 @APP.get("/api/results")
 def results():
@@ -245,4 +264,3 @@ def main():
 init()
 
 if __name__=="__main__": main()
-

@@ -17,6 +17,16 @@ function renderPlayers(ps){
  if(!filtered.length){target.innerHTML='<div class="empty-state"><span>⌕</span><p>Nenhum participante encontrado.<br>Tente outro nome.</p></div>';return}
  target.innerHTML=filtered.map(p=>{const i=ps.indexOf(p);return `<div class="player-row"><span class="player-name"><i class="avatar">${i<3?["🥇","🥈","🥉"][i]:esc(p.name.trim()[0].toUpperCase())}</i>${esc(p.name)}</span><span>${p.age}</span><span>${p.answered}/11</span><span class="points">${Number(p.score).toLocaleString("pt-BR")}</span></div>`}).join("");
 }
+function renderTeacherQuestion(q,revealed){
+ const panel=$("#teacherAnswer");
+ if(!q){panel.classList.add("hidden");return}
+ panel.classList.remove("hidden");
+ $("#teacherAnswerBadge").textContent=`GABARITO: ${q.correct_letter}`;
+ $("#teacherPrompt").textContent=q.prompt;
+ $("#teacherExplanation").textContent=q.explanation;
+ $("#teacherOptions").innerHTML=q.options.map((option,i)=>`<div class="teacher-option ${i===q.correct?"is-correct":""}"><span class="teacher-option-letter">${"ABCDE"[i]}</span><span>${esc(option)}</span>${i===q.correct?'<b>✓ CORRETA</b>':""}</div>`).join("");
+ panel.setAttribute("aria-label",`Gabarito privado do professor. Resposta correta: ${q.correct_letter}${revealed?". Resposta já revelada para a turma.":"."}`);
+}
 async function update(){
  if(!pin)return;
  try{
@@ -39,10 +49,11 @@ async function update(){
   $("#closeBtn").classList.toggle("hidden",physical||!active);
   $("#finishBtn").classList.toggle("hidden",finished||b.current<0||active&&!(physical&&b.revealed&&last)||!active&&physical&&!last);
   $("#finishBtn").textContent=physical?"Finalizar o aulão  →":"Ver resultado final  →";
-  if(active){const q=await api("/api/state");$("#liveSubject").textContent=q.question.subject.toUpperCase();$("#liveTopic").textContent=q.question.topic;}
+  if(b.question){$("#liveSubject").textContent=b.question.subject.toUpperCase();$("#liveTopic").textContent=b.question.topic;}
   else if(finished){$("#liveSubject").textContent="AULÃO ENCERRADO";$("#liveTopic").textContent="Parabéns pela participação da turma!"}
   else if(b.current>=0){$("#liveSubject").textContent=physical?"QUESTÃO REVELADA":"RESPOSTAS RECEBIDAS";$("#liveTopic").textContent=`Pergunta ${b.current+1} encerrada`;}
   else{$("#liveSubject").textContent="AGUARDANDO INÍCIO";$("#liveTopic").textContent="Escolha o formato e abra a primeira pergunta."}
+  renderTeacherQuestion(b.question,b.revealed);
  }catch(e){if(e.message.includes("autorizado")){pin="";sessionStorage.removeItem("enemPin");location.reload()}}
 }
 async function control(action,extra={}){try{await api("/api/control",{action,...extra});await update()}catch(e){alert(e.message)}}
